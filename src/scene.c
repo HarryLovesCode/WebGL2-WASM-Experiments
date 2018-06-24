@@ -116,5 +116,5 @@ void object_update(Object *object)
     // Model
     mat4_translate(object->m_pos, object->v_pos);
     mat4_rotate(object->m_rot, object->v_rot);
-    mat4_multiply(object->m_out, object->m_rot, object->m_pos);
+    mat4_multiply(object->m_out, object->m_pos, object->m_rot);
 }

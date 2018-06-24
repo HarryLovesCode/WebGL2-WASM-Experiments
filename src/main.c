@@ -14,7 +14,7 @@
 
 GLFWwindow *window; // GLFW window
 GLuint vao, vbos[3]; // Vertex buffers
-GLuint prog, tex, u_view, u_proj, u_mod; // GLSL related variables
+GLuint prog, tex, u_view, u_proj, u_mod, u_lpos, u_lcol, u_cpos; // GLSL related variables
 
 Camera cam;
 Object world;
@@ -34,15 +34,19 @@ void draw() {
 
     camera_update(&cam);
     camera_aspect(&cam, width, height);
-    camera_translation(&cam, 0, 0, -4.0f);
+    camera_translation(&cam, 0, 0, 0);
 
     object_update(&world);
-    object_translation(&world, 0.0, 0.0, 0.0);
-    object_rotation(&world, 0.0, (float) glfwGetTime(), 0.0);
+    object_translation(&world, 0, 0, -3);
+    object_rotation(&world, 0.0, -mouse_x * 0.005, 0.0);
 
     glUniformMatrix4fv(u_proj, 1, GL_FALSE, &cam.m_pro[0][0]);
     glUniformMatrix4fv(u_view, 1, GL_FALSE, &cam.m_view[0][0]);
     glUniformMatrix4fv(u_mod, 1, GL_FALSE, &world.m_out[0][0]);
+
+    glUniform3f(u_lpos, 0, 0, 0);
+    glUniform3f(u_lcol, 1, 1, 1);
+    glUniform3f(u_cpos, 0, 0, 0);
 
     glDrawArrays(GL_TRIANGLES, 0, model.draw_count);
 
@@ -75,15 +79,18 @@ int main()
     glfwMakeContextCurrent(window);
     glfwSetKeyCallback(window, glfw_key_callback);
 
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
     prog = load_program("./res/vs.glsl", "./res/fs.glsl");
-    tex = load_texture("./res/SciFiHelmet_BaseColor.png");
+    tex = load_texture("./res/helmet.jpg");
     u_proj = glGetUniformLocation(prog, "m_proj");
     u_view = glGetUniformLocation(prog, "m_view");
     u_mod = glGetUniformLocation(prog, "m_mod");
+    u_lpos = glGetUniformLocation(prog, "l_pos");
+    u_lcol = glGetUniformLocation(prog, "l_col");
+    u_cpos = glGetUniformLocation(prog, "c_pos");
 
 
     mesh_load(&model, "../res/helmet.obj");
