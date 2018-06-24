@@ -1,8 +1,8 @@
 CC = emcc
-SRCS = main.c util.c vector.c matrix.c loader.c camera.c callbacks.c
+SRCS = main.c util.c vector.c matrix.c loader.c scene.c callbacks.c
 FILES = $(addprefix src/, $(SRCS)) # Add 'src/' to each source
 OBJS = $(FILES:.c=.o) # Modify file extensions of FILES
-EOPT = USE_WEBGL2=1 FULL_ES3=1 USE_GLFW=3 WASM=1  ALLOW_MEMORY_GROWTH=1 # Emscripten specific options
+EOPT = USE_WEBGL2=1 FULL_ES3=1 USE_GLFW=3 WASM=1  ALLOW_MEMORY_GROWTH=1# Emscripten specific options
 EOPTS = $(addprefix -s $(EMPTY), $(EOPT))	# Add '-s ' to each option
 
 .PHONY: dist clean
@@ -10,7 +10,7 @@ EOPTS = $(addprefix -s $(EMPTY), $(EOPT))	# Add '-s ' to each option
 # Builds necessary files
 build: $(OBJS)
 		mkdir -p build
-		$(CC) $(FILES) -O2 $(EOPTS) -o build/index.html --preload-file res
+		$(CC) $(FILES) -O2 $(EOPTS) -o build/index.html --preload-file res #--shell-file index.html
 
 # Removes object files, but leaves build for serving
 dist: build

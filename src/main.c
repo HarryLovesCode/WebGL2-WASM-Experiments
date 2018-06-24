@@ -7,16 +7,17 @@
 #include <GLFW/glfw3.h>
 #include <GLES3/gl3.h>
 
-#include "util.h"
-#include "loader.h"
-#include "camera.h"
 #include "callbacks.h"
+#include "loader.h"
+#include "scene.h"
+#include "util.h"
 
 GLFWwindow *window; // GLFW window
 GLuint vao, vbos[3]; // Vertex buffers
-GLuint prog, tex, u_trans, u_proj; // GLSL related variables
+GLuint prog, tex, u_view, u_proj, u_mod; // GLSL related variables
 
 Camera cam;
+Object world;
 Mesh model;
 int width, height;
 double mouse_x, mouse_y;
@@ -33,10 +34,15 @@ void draw() {
 
     camera_update(&cam);
     camera_aspect(&cam, width, height);
-    camera_rotate(&cam, 0.0, (float) glfwGetTime(), 0.0f);
     camera_translation(&cam, 0, 0, -4.0f);
+
+    object_update(&world);
+    object_translation(&world, 0.0, 0.0, 0.0);
+    object_rotation(&world, 0.0, (float) glfwGetTime(), 0.0);
+
     glUniformMatrix4fv(u_proj, 1, GL_FALSE, &cam.m_pro[0][0]);
-    glUniformMatrix4fv(u_trans, 1, GL_FALSE, &cam.m_mod[0][0]);
+    glUniformMatrix4fv(u_view, 1, GL_FALSE, &cam.m_view[0][0]);
+    glUniformMatrix4fv(u_mod, 1, GL_FALSE, &world.m_out[0][0]);
 
     glDrawArrays(GL_TRIANGLES, 0, model.draw_count);
 
@@ -57,9 +63,9 @@ int main()
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    glfwWindowHint(GLFW_SAMPLES, 4);
+    glfwWindowHint(GLFW_SAMPLES, 16);
 
-    window = glfwCreateWindow(640, 360, "Hello World!", NULL, NULL);
+    window = glfwCreateWindow(1920, 1080, "Hello World!", NULL, NULL);
 
     if (!window) {
         fputs("Failed to create GLFW window", stderr);
@@ -74,12 +80,15 @@ int main()
     glDepthFunc(GL_LESS);
 
     prog = load_program("./res/vs.glsl", "./res/fs.glsl");
-    tex = load_texture("./res/head.jpg");
+    tex = load_texture("./res/SciFiHelmet_BaseColor.png");
     u_proj = glGetUniformLocation(prog, "m_proj");
-    u_trans = glGetUniformLocation(prog, "m_trans");
+    u_view = glGetUniformLocation(prog, "m_view");
+    u_mod = glGetUniformLocation(prog, "m_mod");
 
-    mesh_load(&model, "../res/head.obj");
-    cam = camera_create(1.0f, 640, 360, 0.1f, 100.0f);
+
+    mesh_load(&model, "../res/helmet.obj");
+    cam = camera_create(1.0f, 1920, 1080, 0.1f, 100.0f);
+    world = object_create();
 
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);

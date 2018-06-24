@@ -11,7 +11,8 @@ GLuint create_shader(GLenum type, const char *source)
     glCompileShader(shader);
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 
-    if (success == GL_FALSE) {
+    if (success == GL_FALSE)
+    {
         GLchar *info_log;
         GLint max_len = 0;
 
@@ -39,7 +40,8 @@ GLuint create_program(GLuint vert_shader, GLuint frag_shader)
     glLinkProgram(program);
     glGetProgramiv(program, GL_LINK_STATUS, &success);
 
-    if (success == GL_FALSE) {
+    if (success == GL_FALSE)
+    {
         GLchar *info_log;
         GLint max_len = 0;
 
@@ -63,7 +65,8 @@ GLuint load_shader(GLenum type, const char *path)
     GLuint shader;
     FILE *file = fopen(path, "rb");
 
-    if (!file) {
+    if (!file)
+    {
         fprintf(stderr, "Failed to open file: %s\n", path);
         exit(EXIT_FAILURE);
     }
@@ -101,9 +104,9 @@ GLuint load_texture(const char *path)
 
     glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
     stbi_image_free(data);
     return tex;
