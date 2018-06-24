@@ -1,1 +1,0 @@
-/usr/bin/cc   -std=c99 -O3   CMakeFiles/opengl.dir/src/main.c.o CMakeFiles/opengl.dir/src/util.c.o CMakeFiles/opengl.dir/src/loader.c.o CMakeFiles/opengl.dir/src/vector.c.o CMakeFiles/opengl.dir/src/camera.c.o CMakeFiles/opengl.dir/src/matrix.c.o CMakeFiles/opengl.dir/src/callbacks.c.o  -o opengl -rdynamic -lm -lGLEW -lGLU -lGL -lglfw 

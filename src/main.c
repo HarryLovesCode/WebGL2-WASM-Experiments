@@ -1,26 +1,53 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <GL/glew.h>
+#include <emscripten/emscripten.h>
+#include <emscripten/html5.h>
+#define GLFW_INCLUDE_ES3
 #include <GLFW/glfw3.h>
+#include <GLES3/gl3.h>
 
 #include "util.h"
 #include "loader.h"
 #include "camera.h"
 #include "callbacks.h"
 
+GLFWwindow *window; // GLFW window
+GLuint vao, vbos[3]; // Vertex buffers
+GLuint prog, tex, u_trans, u_proj; // GLSL related variables
+
+Camera cam;
+Mesh model;
+int width, height;
+double mouse_x, mouse_y;
+
+void draw() {
+    glfwGetCursorPos(window, &mouse_x, &mouse_y);
+    glfwGetFramebufferSize(window, &width, &height);
+    glViewport(0, 0, width, height);
+
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+    glBindVertexArray(vao);
+    glUseProgram(prog);
+
+    camera_update(&cam);
+    camera_aspect(&cam, width, height);
+    camera_rotation(&cam, mouse_y * 0.001, mouse_x * 0.001, 0.0f);
+    camera_translation(&cam, 0, 0, -3.0f);
+    glUniformMatrix4fv(u_proj, 1, GL_FALSE, &cam.m_pro[0][0]);
+    glUniformMatrix4fv(u_trans, 1, GL_FALSE, &cam.m_mod[0][0]);
+
+    glDrawArrays(GL_TRIANGLES, 0, model.draw_count);
+
+    glUseProgram(0);
+
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+}
+
 int main()
 {
-    GLenum glew_status; // Status of glewInit()
-    GLFWwindow *window; // GLFW window
-    GLuint vao, vbos[3]; // Vertex buffers
-    GLuint prog, tex, u_trans, u_proj; // GLSL related variables
-
-    Camera cam;
-    Mesh model;
-    int width, height;
-    double mouse_x, mouse_y;
-
     glfwSetErrorCallback(glfw_error_callback);
 
     if (!glfwInit()) {
@@ -29,11 +56,10 @@ int main()
     }
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_SAMPLES, 16);
 
-    window = glfwCreateWindow(1920, 1080, "Hello World!", glfwGetPrimaryMonitor(), NULL);
+    window = glfwCreateWindow(640, 360, "Hello World!", NULL, NULL);
 
     if (!window) {
         fputs("Failed to create GLFW window", stderr);
@@ -43,25 +69,17 @@ int main()
     glfwMakeContextCurrent(window);
     glfwSetKeyCallback(window, glfw_key_callback);
 
-    glewExperimental = GL_TRUE;
-    glew_status = glewInit();
-
-    if (glew_status != GLEW_OK) {
-        fprintf(stderr, "Failed to initialize GLEW: %s", glewGetErrorString(glew_status));
-        exit(EXIT_FAILURE);
-    }
-
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    prog = load_program("../res/vs.glsl", "../res/fs.glsl");
-    tex = load_texture("../res/head.jpg");
+    prog = load_program("./res/vs.glsl", "./res/fs.glsl");
+    tex = load_texture("./res/head.jpg");
     u_proj = glGetUniformLocation(prog, "m_proj");
     u_trans = glGetUniformLocation(prog, "m_trans");
 
     mesh_load(&model, "../res/head.obj");
-    cam = camera_create(1.0f, 1280, 720, 0.1f, 100.0f);
+    cam = camera_create(1.0f, 640, 360, 0.1f, 100.0f);
 
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -83,35 +101,14 @@ int main()
     glEnableVertexAttribArray(2);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
 
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    EmscriptenFullscreenStrategy strategy;
+    strategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH;
+    strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_HIDEF;
+    strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
+    emscripten_request_fullscreen_strategy(NULL, 1, &strategy);
 
-    while (!glfwWindowShouldClose(window)) {
-        glfwGetCursorPos(window, &mouse_x, &mouse_y);
-        glfwGetFramebufferSize(window, &width, &height);
-        glViewport(0, 0, width, height);
-
-        glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-        glUseProgram(prog);
-        glBindVertexArray(vao);
-
-        camera_update(&cam);
-        camera_aspect(&cam, width, height);
-        camera_rotation(&cam, mouse_y * 0.0005, mouse_x * 0.0005, 0.0f);
-        camera_translation(&cam, 0, 0, -3.0f);
-        glUniformMatrix4fv(u_proj, 1, GL_FALSE, &cam.m_pro[0][0]);
-        glUniformMatrix4fv(u_trans, 1, GL_FALSE, &cam.m_mod[0][0]);
-
-        glDrawArrays(GL_TRIANGLES, 0, model.draw_count);
-
-        glBindVertexArray(0);
-        glUseProgram(0);
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
+    emscripten_set_main_loop(draw, 0, 0);
 
     exit(EXIT_SUCCESS);
 }

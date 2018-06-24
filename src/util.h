@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <GL/glew.h>
+#include <GLES3/gl3.h>
 
 GLuint create_shader(GLenum type, const char* source);
 GLuint create_program(GLuint vert_shader, GLuint frag_shader);

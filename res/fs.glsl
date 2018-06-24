@@ -1,8 +1,8 @@
-#version 330
+#version 300 es
 
-in vec2 u_pos_vs;
+in lowp vec2 u_pos_vs;
 
-out vec3 color_out;
+out lowp vec3 color_out;
 
 uniform sampler2D tex;
 
