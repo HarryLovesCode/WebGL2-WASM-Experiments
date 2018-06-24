@@ -33,8 +33,8 @@ void draw() {
 
     camera_update(&cam);
     camera_aspect(&cam, width, height);
-    camera_rotation(&cam, mouse_y * 0.001, mouse_x * 0.001, 0.0f);
-    camera_translation(&cam, 0, 0, -3.0f);
+    camera_rotate(&cam, 0.0, (float) glfwGetTime(), 0.0f);
+    camera_translation(&cam, 0, 0, -4.0f);
     glUniformMatrix4fv(u_proj, 1, GL_FALSE, &cam.m_pro[0][0]);
     glUniformMatrix4fv(u_trans, 1, GL_FALSE, &cam.m_mod[0][0]);
 
@@ -57,7 +57,7 @@ int main()
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    glfwWindowHint(GLFW_SAMPLES, 16);
+    glfwWindowHint(GLFW_SAMPLES, 4);
 
     window = glfwCreateWindow(640, 360, "Hello World!", NULL, NULL);
 
@@ -69,7 +69,7 @@ int main()
     glfwMakeContextCurrent(window);
     glfwSetKeyCallback(window, glfw_key_callback);
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 

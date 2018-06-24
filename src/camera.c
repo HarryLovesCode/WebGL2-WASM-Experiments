@@ -42,9 +42,9 @@ void camera_translation(Camera *camera, float x, float y, float z)
 
 void camera_rotate(Camera *camera, float x, float y, float z)
 {
-    camera->v_rot[0] += x;
-    camera->v_rot[1] += y;
-    camera->v_rot[2] += z;
+    camera->v_rot[0] = +x;
+    camera->v_rot[1] = +y;
+    camera->v_rot[2] = +z;
 }
 
 void camera_rotation(Camera *camera, float x, float y, float z)
@@ -64,5 +64,6 @@ void camera_update(Camera *camera)
         camera->far);
     mat4_translate(camera->m_pos, camera->v_pos);
     mat4_rotate(camera->m_rot, camera->v_rot);
-    mat4_multiply(camera->m_mod, camera->m_rot, camera->m_pos);
+    //mat4_multiply(camera->m_mod, camera->m_rot, camera->m_pos); Perspective
+    mat4_multiply(camera->m_mod, camera->m_pos, camera->m_rot);
 }
